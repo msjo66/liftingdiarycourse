@@ -40,8 +40,8 @@ export default function RootLayout({
             <span className="text-xl font-bold">Lifting Diary</span>
             <div className="flex items-center gap-4">
               <SignedOut>
-                <SignInButton />
-                <SignUpButton />
+                <SignInButton mode="modal"/>
+                <SignUpButton mode="modal"/>
               </SignedOut>
               <SignedIn>
                 <UserButton />
