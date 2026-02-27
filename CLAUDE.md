@@ -11,6 +11,10 @@ npm run start    # Run production server
 npm run lint     # Run ESLint
 ```
 
+## Documentation
+
+**IMPORTANT:** Before generating any code, always check the `/docs` directory for relevant documentation files first. Use those docs as the primary reference for implementation details, patterns, and conventions specific to this project.
+
 ## Architecture
 
 This is a Next.js 15 app using the App Router (`src/app/`). Pages and layouts live under `src/app/`, with `layout.tsx` as the root layout and `page.tsx` as the home page.
