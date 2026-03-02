@@ -1,54 +1,75 @@
-import { Suspense } from 'react';
-import { format, parseISO, isValid } from 'date-fns';
+'use client';
+
+import { useState } from 'react';
+import { format } from 'date-fns';
 import { DatePicker } from '@/components/date-picker';
-import { getWorkoutsByDate } from '@/lib/actions/workouts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
-interface DashboardPageProps {
-  searchParams: Promise<{ date?: string }>;
-}
+const MOCK_WORKOUTS = [
+  {
+    id: 1,
+    name: 'Push Day',
+    exercises: [
+      {
+        id: 1,
+        name: 'Bench Press',
+        sets: [
+          { id: 1, setNumber: 1, reps: 8, weight: 80, weightUnit: 'kg' },
+          { id: 2, setNumber: 2, reps: 8, weight: 80, weightUnit: 'kg' },
+          { id: 3, setNumber: 3, reps: 6, weight: 82.5, weightUnit: 'kg' },
+        ],
+      },
+      {
+        id: 2,
+        name: 'Overhead Press',
+        sets: [
+          { id: 4, setNumber: 1, reps: 10, weight: 50, weightUnit: 'kg' },
+          { id: 5, setNumber: 2, reps: 10, weight: 50, weightUnit: 'kg' },
+        ],
+      },
+    ],
+  },
+];
 
-function todayStr() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
+export default function DashboardPage() {
+  const [date, setDate] = useState<Date>(new Date());
 
-export default async function DashboardPage({ searchParams }: DashboardPageProps) {
-  const { date: dateParam } = await searchParams;
-
-  const dateStr =
-    dateParam && isValid(parseISO(dateParam)) ? dateParam : todayStr();
-
-  // Parse for display only (local noon to avoid any off-by-one)
-  const displayDate = parseISO(dateStr);
-
-  const workouts = await getWorkoutsByDate(dateStr);
+  const workouts = MOCK_WORKOUTS;
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
       <div className="mb-6 flex items-center gap-4">
         <h1 className="text-2xl font-semibold">Workouts</h1>
-        <Suspense>
-          <DatePicker selected={displayDate} />
-        </Suspense>
+        <DatePicker selected={date} onSelect={setDate} />
       </div>
+
+      <p className="text-muted-foreground mb-4 text-sm">
+        {format(date, 'do MMM yyyy')}
+      </p>
 
       {workouts.length === 0 ? (
         <p className="text-muted-foreground text-sm">
-          No workouts logged for {format(displayDate, 'PPPP')}.
+          No workouts logged for {format(date, 'do MMM yyyy')}.
         </p>
       ) : (
-        <ul className="space-y-6">
+        <div className="space-y-4">
           {workouts.map((workout) => (
-            <li key={workout.id} className="rounded-lg border p-4">
-              <h2 className="mb-3 text-lg font-medium">{workout.name}</h2>
-              {workout.workoutExercises.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No exercises recorded.</p>
-              ) : (
-                <ul className="space-y-4">
-                  {workout.workoutExercises.map((we) => (
-                    <li key={we.id}>
-                      <p className="mb-1 font-medium capitalize">{we.exercise.name}</p>
-                      {we.sets.length > 0 && (
+            <Card key={workout.id}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">{workout.name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {workout.exercises.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">No exercises recorded.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {workout.exercises.map((exercise) => (
+                      <div key={exercise.id}>
+                        <div className="mb-2 flex items-center gap-2">
+                          <p className="font-medium capitalize">{exercise.name}</p>
+                          <Badge variant="secondary">{exercise.sets.length} sets</Badge>
+                        </div>
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="text-muted-foreground border-b text-left">
@@ -58,7 +79,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                             </tr>
                           </thead>
                           <tbody>
-                            {we.sets.map((set) => (
+                            {exercise.sets.map((set) => (
                               <tr key={set.id} className="border-b last:border-0">
                                 <td className="py-1 pr-4">{set.setNumber}</td>
                                 <td className="py-1 pr-4">{set.reps ?? '—'}</td>
@@ -71,14 +92,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                             ))}
                           </tbody>
                         </table>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           ))}
-        </ul>
+        </div>
       )}
     </main>
   );

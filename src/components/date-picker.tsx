@@ -11,18 +11,23 @@ import { cn } from '@/lib/utils';
 
 interface DatePickerProps {
   selected: Date;
+  onSelect?: (date: Date) => void;
 }
 
-export function DatePicker({ selected }: DatePickerProps) {
+export function DatePicker({ selected, onSelect }: DatePickerProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
 
   function handleSelect(day: Date | undefined) {
     if (!day) return;
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('date', format(day, 'yyyy-MM-dd'));
-    router.push(`/dashboard?${params.toString()}`);
+    if (onSelect) {
+      onSelect(day);
+    } else {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('date', format(day, 'yyyy-MM-dd'));
+      router.push(`/dashboard?${params.toString()}`);
+    }
     setOpen(false);
   }
 
@@ -34,7 +39,7 @@ export function DatePicker({ selected }: DatePickerProps) {
           className={cn('w-48 justify-start text-left font-normal')}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {format(selected, 'PPP')}
+          {format(selected, 'do MMM yyyy')}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
