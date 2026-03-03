@@ -1,20 +1,45 @@
 'use client';
 
+import { useState, useTransition } from 'react';
 import { format, formatISO } from 'date-fns';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Calendar } from '@/components/ui/calendar';
+import type { DayButton } from 'react-day-picker';
+import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { getWorkoutDatesForMonthAction } from '@/lib/actions/workouts';
 import type { WorkoutsForDate } from '@/data/workouts';
 
 interface WorkoutListProps {
   date: Date;
   workouts: WorkoutsForDate;
+  workoutDates: string[];
 }
 
-export function WorkoutList({ date, workouts }: WorkoutListProps) {
+function WorkoutDayButton(
+  workoutDateSet: Set<string>,
+  props: React.ComponentProps<typeof DayButton>,
+) {
+  const dateStr = formatISO(props.day.date, { representation: 'date' });
+  const hasWorkout = workoutDateSet.has(dateStr);
+
+  return (
+    <CalendarDayButton {...props}>
+      {props.children}
+      {hasWorkout && (
+        <span className="bg-primary mx-auto size-1 rounded-full" />
+      )}
+    </CalendarDayButton>
+  );
+}
+
+export function WorkoutList({ date, workouts, workoutDates }: WorkoutListProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [workoutDateSet, setWorkoutDateSet] = useState(
+    () => new Set(workoutDates),
+  );
+  const [, startTransition] = useTransition();
 
   function handleDateSelect(newDate: Date | undefined) {
     if (!newDate) return;
@@ -22,6 +47,20 @@ export function WorkoutList({ date, workouts }: WorkoutListProps) {
     params.set('date', formatISO(newDate, { representation: 'date' }));
     router.push(`?${params.toString()}`);
   }
+
+  function handleMonthChange(month: Date) {
+    const monthIso = formatISO(month, { representation: 'date' }).slice(0, 7);
+    startTransition(async () => {
+      const dates = await getWorkoutDatesForMonthAction(monthIso);
+      setWorkoutDateSet((prev) => {
+        const next = new Set(prev);
+        for (const d of dates) next.add(d);
+        return next;
+      });
+    });
+  }
+
+  const modifierDates = [...workoutDateSet].map((d) => new Date(d + 'T00:00:00'));
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
@@ -33,6 +72,11 @@ export function WorkoutList({ date, workouts }: WorkoutListProps) {
             selected={date}
             defaultMonth={date}
             onSelect={handleDateSelect}
+            onMonthChange={handleMonthChange}
+            modifiers={{ hasWorkout: modifierDates }}
+            components={{
+              DayButton: (props) => WorkoutDayButton(workoutDateSet, props),
+            }}
           />
         </div>
 

@@ -4,6 +4,8 @@ import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { workouts } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { formatISO } from 'date-fns';
+import { getWorkoutDatesForMonth } from '@/data/workouts';
 
 /**
  * Fetch all workouts for the logged-in user on the given date string (YYYY-MM-DD).
@@ -31,4 +33,10 @@ export async function getWorkoutsByDate(dateStr: string) {
   });
 
   return rows;
+}
+
+export async function getWorkoutDatesForMonthAction(monthIso: string) {
+  const month = new Date(`${monthIso}-01T00:00:00.000Z`);
+  const dates = await getWorkoutDatesForMonth(month);
+  return dates.map((d) => formatISO(d, { representation: 'date' }));
 }

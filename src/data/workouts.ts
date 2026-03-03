@@ -1,7 +1,8 @@
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { workouts, workoutExercises, exercises, sets } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, gte, lte } from 'drizzle-orm';
+import { startOfMonth, endOfMonth } from 'date-fns';
 
 export async function getWorkoutsForDate(date: Date) {
   const { userId } = await auth();
@@ -83,3 +84,21 @@ export async function getWorkoutsForDate(date: Date) {
 }
 
 export type WorkoutsForDate = Awaited<ReturnType<typeof getWorkoutsForDate>>;
+
+export async function getWorkoutDatesForMonth(month: Date) {
+  const { userId } = await auth();
+  if (!userId) throw new Error('Unauthorized');
+
+  const rows = await db
+    .selectDistinct({ date: workouts.date })
+    .from(workouts)
+    .where(
+      and(
+        eq(workouts.userId, userId),
+        gte(workouts.date, startOfMonth(month)),
+        lte(workouts.date, endOfMonth(month)),
+      ),
+    );
+
+  return rows.map((r) => r.date);
+}
