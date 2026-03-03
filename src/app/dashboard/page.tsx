@@ -1,106 +1,14 @@
-'use client';
+import { getWorkoutsForDate } from '@/data/workouts';
+import { WorkoutList } from './_components/workout-list';
 
-import { useState } from 'react';
-import { format } from 'date-fns';
-import { DatePicker } from '@/components/date-picker';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+interface DashboardPageProps {
+  searchParams: Promise<{ date?: string }>;
+}
 
-const MOCK_WORKOUTS = [
-  {
-    id: 1,
-    name: 'Push Day',
-    exercises: [
-      {
-        id: 1,
-        name: 'Bench Press',
-        sets: [
-          { id: 1, setNumber: 1, reps: 8, weight: 80, weightUnit: 'kg' },
-          { id: 2, setNumber: 2, reps: 8, weight: 80, weightUnit: 'kg' },
-          { id: 3, setNumber: 3, reps: 6, weight: 82.5, weightUnit: 'kg' },
-        ],
-      },
-      {
-        id: 2,
-        name: 'Overhead Press',
-        sets: [
-          { id: 4, setNumber: 1, reps: 10, weight: 50, weightUnit: 'kg' },
-          { id: 5, setNumber: 2, reps: 10, weight: 50, weightUnit: 'kg' },
-        ],
-      },
-    ],
-  },
-];
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+  const { date: dateParam } = await searchParams;
+  const date = dateParam ? new Date(dateParam) : new Date();
+  const workouts = await getWorkoutsForDate(date);
 
-export default function DashboardPage() {
-  const [date, setDate] = useState<Date>(new Date());
-
-  const workouts = MOCK_WORKOUTS;
-
-  return (
-    <main className="mx-auto max-w-3xl px-4 py-8">
-      <div className="mb-6 flex items-center gap-4">
-        <h1 className="text-2xl font-semibold">Workouts</h1>
-        <DatePicker selected={date} onSelect={setDate} />
-      </div>
-
-      <p className="text-muted-foreground mb-4 text-sm">
-        {format(date, 'do MMM yyyy')}
-      </p>
-
-      {workouts.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          No workouts logged for {format(date, 'do MMM yyyy')}.
-        </p>
-      ) : (
-        <div className="space-y-4">
-          {workouts.map((workout) => (
-            <Card key={workout.id}>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">{workout.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {workout.exercises.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">No exercises recorded.</p>
-                ) : (
-                  <div className="space-y-4">
-                    {workout.exercises.map((exercise) => (
-                      <div key={exercise.id}>
-                        <div className="mb-2 flex items-center gap-2">
-                          <p className="font-medium capitalize">{exercise.name}</p>
-                          <Badge variant="secondary">{exercise.sets.length} sets</Badge>
-                        </div>
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="text-muted-foreground border-b text-left">
-                              <th className="pb-1 pr-4 font-normal">Set</th>
-                              <th className="pb-1 pr-4 font-normal">Reps</th>
-                              <th className="pb-1 font-normal">Weight</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {exercise.sets.map((set) => (
-                              <tr key={set.id} className="border-b last:border-0">
-                                <td className="py-1 pr-4">{set.setNumber}</td>
-                                <td className="py-1 pr-4">{set.reps ?? '—'}</td>
-                                <td className="py-1">
-                                  {set.weight != null
-                                    ? `${set.weight} ${set.weightUnit}`
-                                    : '—'}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </main>
-  );
+  return <WorkoutList date={date} workouts={workouts} />;
 }
