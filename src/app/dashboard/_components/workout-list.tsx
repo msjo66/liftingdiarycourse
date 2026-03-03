@@ -1,6 +1,6 @@
 'use client';
 
-import { format } from 'date-fns';
+import { format, formatISO } from 'date-fns';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DatePicker } from '@/components/date-picker';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +18,7 @@ export function WorkoutList({ date, workouts }: WorkoutListProps) {
 
   function handleDateSelect(newDate: Date) {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('date', newDate.toISOString().slice(0, 10));
+    params.set('date', formatISO(newDate, { representation: 'date' }));
     router.push(`?${params.toString()}`);
   }
 
