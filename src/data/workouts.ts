@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { workouts, workoutExercises, exercises, sets } from '@/db/schema';
 import { eq, and, gte, lte } from 'drizzle-orm';
-import { startOfMonth, endOfMonth } from 'date-fns';
+import { startOfMonth, endOfMonth, formatISO } from 'date-fns';
 
 export async function getWorkoutsForDate(date: Date) {
   const { userId } = await auth();
@@ -84,6 +84,13 @@ export async function getWorkoutsForDate(date: Date) {
 }
 
 export type WorkoutsForDate = Awaited<ReturnType<typeof getWorkoutsForDate>>;
+
+export async function createWorkout(name: string, date: Date) {
+  const { userId } = await auth();
+  if (!userId) throw new Error('Unauthorized');
+  const [workout] = await db.insert(workouts).values({ userId, name, date: new Date(formatISO(date, { representation: 'date' })) }).returning();
+  return workout;
+}
 
 export async function getWorkoutDatesForMonth(month: Date) {
   const { userId } = await auth();

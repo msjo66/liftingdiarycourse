@@ -134,6 +134,19 @@ export async function deleteWorkout(workoutId: string) {
 }
 ```
 
+## Passing Dates to Drizzle ORM
+
+When inserting or querying dates via Drizzle ORM, always convert a `Date` object to a UTC-safe date string first using `formatISO` from `date-fns`. This prevents timezone off-by-one bugs where a local midnight date gets stored as the previous day in UTC.
+
+```ts
+import { formatISO } from 'date-fns';
+
+new Date(formatISO(date, { representation: 'date' }))
+// e.g. new Date("2026-03-04") — always UTC midnight, correct date regardless of server timezone
+```
+
+**NEVER** pass a raw `Date` object with a local time component directly to Drizzle for date-only columns.
+
 ## Summary
 
 | Concern | Rule |
