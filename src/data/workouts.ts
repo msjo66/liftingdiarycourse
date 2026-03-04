@@ -92,6 +92,31 @@ export async function createWorkout(name: string, date: Date) {
   return workout;
 }
 
+export async function getWorkoutById(workoutId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error('Unauthorized');
+
+  const [workout] = await db
+    .select()
+    .from(workouts)
+    .where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)));
+
+  return workout ?? null;
+}
+
+export async function updateWorkout(workoutId: string, name: string, date: Date) {
+  const { userId } = await auth();
+  if (!userId) throw new Error('Unauthorized');
+
+  const [workout] = await db
+    .update(workouts)
+    .set({ name, date: new Date(formatISO(date, { representation: 'date' })) })
+    .where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)))
+    .returning();
+
+  return workout;
+}
+
 export async function getWorkoutDatesForMonth(month: Date) {
   const { userId } = await auth();
   if (!userId) throw new Error('Unauthorized');
