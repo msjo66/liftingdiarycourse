@@ -10,9 +10,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { createWorkoutAction } from "../actions";
 
-export function NewWorkoutForm() {
+export function NewWorkoutForm({ initialDate }: { initialDate: Date }) {
   const [name, setName] = useState("");
-  const [date, setDate] = useState<Date>(new Date());
+  const [date, setDate] = useState<Date>(initialDate);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -8,6 +8,7 @@ import type { DayButton } from 'react-day-picker';
 import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { getWorkoutDatesForMonthAction } from '@/lib/actions/workouts';
 import type { WorkoutsForDate } from '@/data/workouts';
 
@@ -65,7 +66,12 @@ export function WorkoutList({ date, workouts, workoutDates }: WorkoutListProps) 
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
-      <h1 className="text-2xl font-semibold mb-6">Workouts</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-semibold">Workouts</h1>
+        <Button asChild>
+          <Link href={`/dashboard/workout/new?date=${formatISO(date, { representation: 'date' })}`}>Log New Workout</Link>
+        </Button>
+      </div>
       <div className="flex gap-8">
         <div className="shrink-0">
           <Calendar
