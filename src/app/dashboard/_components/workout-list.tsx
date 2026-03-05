@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { format, formatISO } from 'date-fns';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { DayButton } from 'react-day-picker';
 import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
@@ -92,7 +93,8 @@ export function WorkoutList({ date, workouts, workoutDates }: WorkoutListProps) 
           ) : (
             <div className="space-y-4">
               {workouts.map((workout) => (
-                <Card key={workout.id}>
+                <Link key={workout.id} href={`/dashboard/workout/${workout.id}`}>
+                  <Card className="hover:bg-accent transition-colors cursor-pointer">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg">{workout.name}</CardTitle>
                   </CardHeader>
@@ -134,7 +136,8 @@ export function WorkoutList({ date, workouts, workoutDates }: WorkoutListProps) 
                       </div>
                     )}
                   </CardContent>
-                </Card>
+                  </Card>
+                </Link>
               ))}
             </div>
           )}
